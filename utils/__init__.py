@@ -20,7 +20,6 @@ class TryExcept(contextlib.ContextDecorator):
 
     def __enter__(self):
         """Enter the runtime context related to this object for error handling with an optional message."""
-        pass
 
     def __exit__(self, exc_type, value, traceback):
         """Context manager exit method that prints an error message with emojis if an exception occurred, always returns
@@ -44,8 +43,7 @@ def threaded(func):
 
 
 def join_threads(verbose=False):
-    """
-    Joins all daemon threads, optionally printing their names if verbose is True.
+    """Joins all daemon threads, optionally printing their names if verbose is True.
 
     Example: atexit.register(lambda: join_threads())
     """
@@ -65,7 +63,6 @@ def notebook_init(verbose=True):
     import shutil
 
     from ultralytics.utils.checks import check_requirements
-
     from utils.general import check_font, is_colab
     from utils.torch_utils import select_device  # imports
 
