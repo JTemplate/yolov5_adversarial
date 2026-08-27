@@ -1,24 +1,23 @@
 """Loss functions used in patch generation."""
 
-from typing import Tuple
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class MaxProbExtractor(nn.Module):
     """MaxProbExtractor: extracts max class probability for class from YOLO output.
 
     Module providing the functionality necessary to extract the max class probability for one class from YOLO output.
-
     """
 
     def __init__(self, config):
-        super(MaxProbExtractor, self).__init__()
+        super().__init__()
         self.config = config
 
     def forward(self, output: torch.Tensor):
-        """Output must be of the shape [batch, -1, 5 + num_cls]"""
+        """Output must be of the shape [batch, -1, 5 + num_cls]."""
         # get values necessary for transformation
         assert output.size(-1) == (5 + self.config.n_classes)
 
@@ -40,20 +39,19 @@ class MaxProbExtractor(nn.Module):
 
 
 class SaliencyLoss(nn.Module):
-    """
-    Implementation of the colorfulness metric as the saliency loss.
+    """Implementation of the colorfulness metric as the saliency loss.
 
-    The smaller the value, the less colorful the image.
-    Reference: https://infoscience.epfl.ch/record/33994/files/HaslerS03.pdf
+    The smaller the value, the less colorful the image. Reference:
+    https://infoscience.epfl.ch/record/33994/files/HaslerS03.pdf
     """
 
     def __init__(self):
-        super(SaliencyLoss, self).__init__()
+        super().__init__()
 
     def forward(self, adv_patch: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            adv_patch: Float Tensor of shape [C, H, W] where C=3 (R, G, B channels)
+            adv_patch: Float Tensor of shape [C, H, W] where C=3 (R, G, B channels).
         """
         assert adv_patch.shape[0] == 3
         r, g, b = adv_patch
@@ -67,18 +65,18 @@ class SaliencyLoss(nn.Module):
 
 
 class TotalVariationLoss(nn.Module):
-    """TotalVariationLoss: calculates the total variation of a patch.
-    Module providing the functionality necessary to calculate the total vatiation (TV) of an adversarial patch.
-    Reference: https://en.wikipedia.org/wiki/Total_variation
+    """TotalVariationLoss: calculates the total variation of a patch. Module providing the functionality necessary to
+    calculate the total vatiation (TV) of an adversarial patch.
+    Reference: https://en.wikipedia.org/wiki/Total_variation.
     """
 
     def __init__(self):
-        super(TotalVariationLoss, self).__init__()
+        super().__init__()
 
     def forward(self, adv_patch: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            adv_patch: Tensor of shape [C, H, W]
+            adv_patch: Tensor of shape [C, H, W].
         """
         # calc diff in patch rows
         tvcomp_r = torch.sum(torch.abs(adv_patch[:, :, 1:] - adv_patch[:, :, :-1] + 0.000001), dim=0)
@@ -91,17 +89,18 @@ class TotalVariationLoss(nn.Module):
 
 
 class NPSLoss(nn.Module):
-    """NMSLoss: calculates the non-printability-score loss of a patch.
-    Module providing the functionality necessary to calculate the non-printability score (NMS) of an adversarial patch.
-    However, a summation of the differences is used instead of the total product to calc the NPSLoss
-    Reference: https://users.ece.cmu.edu/~lbauer/papers/2016/ccs2016-face-recognition.pdf
-        Args:
-            triplet_scores_fpath: str, path to csv file with RGB triplets sep by commas in newlines
-            size: Tuple[int, int], Tuple with height, width of the patch
+    """NMSLoss: calculates the non-printability-score loss of a patch. Module providing the functionality necessary to
+    calculate the non-printability score (NMS) of an adversarial patch. However, a summation of the differences is
+    used instead of the total product to calc the NPSLoss
+    Reference: https://users.ece.cmu.edu/~lbauer/papers/2016/ccs2016-face-recognition.pdf.
+
+    Args:
+        triplet_scores_fpath: str, path to csv file with RGB triplets sep by commas in newlines
+        size: Tuple[int, int], Tuple with height, width of the patch.
     """
 
-    def __init__(self, triplet_scores_fpath: str, size: Tuple[int, int]):
-        super(NPSLoss, self).__init__()
+    def __init__(self, triplet_scores_fpath: str, size: tuple[int, int]):
+        super().__init__()
         self.printability_array = nn.Parameter(
             self.get_printability_array(triplet_scores_fpath, size), requires_grad=False
         )
@@ -120,16 +119,16 @@ class NPSLoss(nn.Module):
         nps_score = torch.sum(nps_score, 0)
         return nps_score / torch.numel(adv_patch)
 
-    def get_printability_array(self, triplet_scores_fpath: str, size: Tuple[int, int]) -> torch.Tensor:
-        """
-        Get printability tensor array holding the rgb triplets (range [0,1]) loaded from triplet_scores_fpath
+    def get_printability_array(self, triplet_scores_fpath: str, size: tuple[int, int]) -> torch.Tensor:
+        """Get printability tensor array holding the rgb triplets (range [0,1]) loaded from triplet_scores_fpath.
+
         Args:
             triplet_scores_fpath: str, path to csv file with RGB triplets sep by commas in newlines
-            size: Tuple[int, int], Tuple with height, width of the patch
+            size: Tuple[int, int], Tuple with height, width of the patch.
         """
         ref_triplet_list = []
         # read in reference printability triplets into a list
-        with open(triplet_scores_fpath, "r", encoding="utf-8") as f:
+        with open(triplet_scores_fpath, encoding="utf-8") as f:
             for line in f:
                 ref_triplet_list.append(line.strip().split(","))
 
