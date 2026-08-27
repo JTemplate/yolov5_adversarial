@@ -1,0 +1,8 @@
+{
+  "random_asr_mean": 31.252717222532766,
+  "random_asr_std": 0.42266497698330496,
+  "transfer_asr_mean": 40.54406558598845,
+  "transfer_asr_std": 1.3326062221748485,
+  "transfer_gain_mean": 9.291348363455688,
+  "transfer_gain_std": 0.9959759659847724
+}

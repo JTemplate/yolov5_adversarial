@@ -1,0 +1,15 @@
+{
+  "source_model": "YOLOv5",
+  "target_model": "FasterRCNN-ResNet50-FPN",
+  "patch": "runs/train_adversarial/20260820-204620_ablation_full_10_seed123/patches/e_10.png",
+  "source_clean_json": "runs/test_adversarial/ablation_full_10_seed123_e10_fullval/20260820-211637_ablation_full_10_seed123/results_json/clean_results.json",
+  "images": 548,
+  "confidence_threshold": 0.4,
+  "iou_threshold": 0.5,
+  "clean_reference_detections": 10734,
+  "random_survived": 7361,
+  "learned_survived": 6413,
+  "random_asr": 0.3142351406744923,
+  "learned_transfer_asr": 0.40255263648220607,
+  "transfer_gain": 0.08831749580771375
+}

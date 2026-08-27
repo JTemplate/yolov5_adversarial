@@ -1,0 +1,121 @@
+experiments:
+  - id: "ablation_full_10_3seeds"
+    status: "completed"
+    hypothesis: "The full patch pipeline using location, rotation, appearance transforms, and Gaussian noise provides the reference attack."
+    method: "Train for 10 epochs on the four-class VisDrone vehicle subset with seeds 42, 123, and 2026; evaluate epoch 10 on 548 validation images."
+    config: "adv_patch_gen/configs/ablation_full_10.json"
+    seeds: [42, 123, 2026]
+    results: "analysis/full_3seeds/results_summary.csv"
+    observed_metrics:
+      clean_ap50_95: 0.997
+      random_patch_ap50_95: 0.447
+      random_patch_asr: 0.327
+      adversarial_patch_ap50_95_by_seed: [0.178, 0.189, 0.194]
+      adversarial_patch_asr_by_seed: [0.597, 0.595, 0.589]
+
+  - id: "ablation_no_gaussian_10_3seeds"
+    status: "completed"
+    hypothesis: "Removing multiplicative/additive Gaussian patch noise changes robustness to appearance variation."
+    method: "Full pipeline with use_mul_add_gau=false; 10 epochs, seeds 42, 123, and 2026."
+    config: "adv_patch_gen/configs/ablation_no_gaussian_10.json"
+    seeds: [42, 123, 2026]
+    results: "analysis/no_gaussian_3seeds/results_summary.csv"
+    observed_metrics:
+      adversarial_patch_ap50_95_by_seed: [0.206, 0.206, 0.200]
+      adversarial_patch_asr_by_seed: [0.581, 0.581, 0.578]
+
+  - id: "ablation_no_location_10_3seeds"
+    status: "completed"
+    hypothesis: "Disabling random patch translation isolates the contribution of location augmentation."
+    method: "Full pipeline with random_patch_loc=false; 10 epochs, seeds 42, 123, and 2026."
+    config: "adv_patch_gen/configs/ablation_no_location_10.json"
+    seeds: [42, 123, 2026]
+    results: "analysis/no_location_3seeds/results_summary.csv"
+    observed_metrics:
+      adversarial_patch_ap50_95_by_seed: [0.182, 0.176, 0.177]
+      adversarial_patch_asr_by_seed: [0.615, 0.608, 0.598]
+
+  - id: "ablation_no_rotate_10_3seeds"
+    status: "completed"
+    hypothesis: "Disabling patch rotation isolates the contribution of rotation augmentation."
+    method: "Full pipeline with rotate_patches=false; 10 epochs, seeds 42, 123, and 2026."
+    config: "adv_patch_gen/configs/ablation_no_rotate_10.json"
+    seeds: [42, 123, 2026]
+    results: "analysis/no_rotate_3seeds/results_summary.csv"
+    observed_metrics:
+      adversarial_patch_ap50_95_by_seed: [0.337, 0.342, 0.195]
+      adversarial_patch_asr_by_seed: [0.468, 0.462, 0.590]
+
+  - id: "ablation_no_transform_10_3seeds"
+    status: "completed"
+    hypothesis: "Disabling brightness/contrast/noise transforms isolates their contribution to patch robustness."
+    method: "Full pipeline with transform_patches=false; 10 epochs, seeds 42, 123, and 2026."
+    config: "adv_patch_gen/configs/ablation_no_transform_10.json"
+    seeds: [42, 123, 2026]
+    results: "analysis/no_transform_3seeds/results_summary.csv"
+    observed_metrics:
+      adversarial_patch_ap50_95_by_seed: [0.205, 0.207, 0.199]
+      adversarial_patch_asr_by_seed: [0.586, 0.581, 0.579]
+
+  - id: "transformer_ablation_single_seed"
+    status: "completed"
+    hypothesis: "A single-seed ablation comparison provides an earlier diagnostic of patch augmentation components."
+    method: "Epoch-10 ablation comparisons retained from the initial analysis run; one condition is spelled no_ratate in the recorded artifact."
+    configs:
+      - "adv_patch_gen/configs/ablation_full_10.json"
+      - "adv_patch_gen/configs/ablation_no_gaussian_10.json"
+      - "adv_patch_gen/configs/ablation_no_location_10.json"
+      - "adv_patch_gen/configs/ablation_no_rotate_10.json"
+      - "adv_patch_gen/configs/ablation_no_transform_10.json"
+    results: "analysis/transformer_ablation/results_summary.csv"
+
+  - id: "fasterrcnn_transfer_3seeds"
+    status: "completed"
+    hypothesis: "A patch learned against YOLOv5 transfers to a different detector family."
+    method: "Evaluate epoch-10 patches from the full ablation on FasterRCNN-ResNet50-FPN at confidence 0.4 and IoU 0.5; seeds 42, 123, and 2026."
+    results: "analysis/fasterrcnn_transfer_3seeds/results_summary.csv"
+    observed_metrics:
+      images: 548
+      clean_reference_detections: 10734
+      random_asr_mean_percent: 31.2527172225
+      random_asr_std_percent: 0.4226649770
+      transfer_asr_mean_percent: 40.5440655860
+      transfer_asr_std_percent: 1.3326062222
+      transfer_gain_mean_percentage_points: 9.2913483635
+
+  - id: "patch_training_configurations"
+    status: "configured"
+    hypothesis: "Base, 20-epoch, full-test, CPU-smoke, and GPU-smoke configurations support reruns and debugging."
+    method: "Configuration-only entry; completion is not asserted without a matching result artifact."
+    configs:
+      - "adv_patch_gen/configs/base.json"
+      - "adv_patch_gen/configs/train20.json"
+      - "adv_patch_gen/configs/full_test.json"
+      - "adv_patch_gen/configs/base_cpu_smoke.json"
+      - "adv_patch_gen/configs/smoke.json"
+
+  - id: "vehicle4_v2_dataset_rebuild"
+    status: "completed"
+    hypothesis: "Correct four-vehicle labels and sequence-grouped validation remove the semantic and frame-leakage confounds in the legacy data."
+    method: "Map VisDrone car, van, truck, and bus to ids 0-3; remove exact duplicate boxes; split the training set by sequence prefix."
+    config: "experiments/vehicle4_v2/prepare_dataset.py"
+    results: "data/visdrone_vehicle4_v2/dataset_manifest.json"
+    observed_metrics:
+      train_images: 5821
+      internal_val_images: 650
+      official_val_images: 548
+      exact_duplicate_boxes_removed: 1
+
+  - id: "vehicle4_v2_detector_retraining"
+    status: "running"
+    hypothesis: "Three detectors trained on identical four-class semantics provide a controlled basis for transfer comparison."
+    method: "Fine-tune COCO-pretrained YOLOv5s, YOLOv5m, and FasterRCNN-ResNet50-FPN with detector seed 0; select on internal validation only."
+    results: "experiment_data/vehicle4_v2/runs/detectors/"
+
+  - id: "vehicle4_v2_transfer_matrix"
+    status: "queued"
+    hypothesis: "A YOLOv5s-trained patch transfers beyond its white-box source and causes a larger relative mAP50-95 drop than paired random patches."
+    method: "Three patch seeds crossed with five transform seeds; ground-truth placement; identical PNG inputs for YOLOv5s, YOLOv5m, and Faster R-CNN."
+    config: "adv_patch_gen/configs/vehicle4_v2_full_10.json"
+    seeds: [42, 123, 2026]
+    results: "experiment_data/vehicle4_v2/analysis/"

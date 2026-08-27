@@ -1,0 +1,63 @@
+datasets:
+  - id: "visdrone_train"
+    description: "VisDrone2019-DET training split with original annotations and converted YOLO labels."
+    role: "Adversarial patch training images and labels."
+    paths:
+      - "data/visdrone_data/VisDrone2019-DET-train/images"
+      - "data/visdrone_data/VisDrone2019-DET-train/annotations"
+      - "data/visdrone_data/VisDrone2019-DET-train/labels"
+      - "data/visdrone_data/VisDrone2019-DET-train.zip"
+    format: "JPG images; VisDrone TXT annotations; YOLO TXT labels"
+    counts:
+      images: 6471
+      annotations: 6471
+      yolo_labels: 6471
+    archive_size_bytes: 1549875511
+    schema: "YOLO labels are class_id, normalized_center_x, normalized_center_y, normalized_width, normalized_height; conversion code is in adv_patch_gen/conv_visdrone_2_yolo/."
+    class_notes: "data/VisDrone.yaml documents 10 raw VisDrone classes; adversarial-patch configs target car, van, truck, and bus (4 classes)."
+
+  - id: "visdrone_val"
+    description: "VisDrone2019-DET validation split with original annotations and converted YOLO labels."
+    role: "Clean, random-patch, and learned-patch evaluation images."
+    paths:
+      - "data/visdrone_data/VisDrone2019-DET-val/images"
+      - "data/visdrone_data/VisDrone2019-DET-val/annotations"
+      - "data/visdrone_data/VisDrone2019-DET-val/labels"
+      - "data/visdrone_data/VisDrone2019-DET-val.zip"
+    format: "JPG images; VisDrone TXT annotations; YOLO TXT labels"
+    counts:
+      images: 548
+      annotations: 548
+      yolo_labels: 548
+    archive_size_bytes: 81638851
+    schema: "Same YOLO label schema as visdrone_train."
+    class_notes: "Evaluation configs use the four vehicle classes car, van, truck, and bus."
+
+  - id: "vehicle_detector_checkpoints"
+    description: "YOLOv5 checkpoints used as target detectors for patch training and evaluation."
+    role: "Pretrained four-class vehicle detector weights."
+    paths:
+      - "runs/train/s_coco_e300_4Class_Vehicle/weights/best.pt"
+      - "runs/train/m_coco_e300_4Class_Vehicle/weights/best.pt"
+    format: "PyTorch .pt checkpoint"
+    sizes_bytes:
+      s_model: 14352509
+      m_model: 42138793
+    schema: "Model weights; class and training metadata are recorded in the corresponding runs/train/*/opt.yaml and results.csv files."
+
+  - id: "visdrone_vehicle4_v2"
+    description: "Audited four-vehicle VisDrone dataset with exact semantic mapping and sequence-grouped internal validation."
+    role: "Canonical detector training, model selection, patch training, and final shared-input evaluation dataset."
+    paths:
+      - "data/visdrone_vehicle4_v2/dataset_manifest.json"
+      - "data/visdrone_vehicle4_v2/images"
+      - "data/visdrone_vehicle4_v2/labels"
+    format: "Symlinked JPG inputs, generated YOLO TXT labels, CSV split audit, and JSON provenance manifest"
+    counts:
+      train_images: 5821
+      internal_val_images: 650
+      official_val_images: 548
+      train_objects: 169839
+      internal_val_objects: 18783
+      official_val_objects: 17040
+    schema: "class_id is car=0, van=1, truck=2, bus=3; boxes use normalized YOLO center-x, center-y, width, height."

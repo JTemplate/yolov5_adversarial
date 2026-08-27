@@ -1,0 +1,15 @@
+{
+  "model": "fasterrcnn_resnet50_fpn",
+  "weights": "COCO DEFAULT",
+  "num_images": 548,
+  "confidence_threshold": 0.4,
+  "total_vehicle_detections": 14098,
+  "average_vehicle_detections_per_image": 25.726277372262775,
+  "average_detection_score": 0.7639977552587555,
+  "class_counts": {
+    "car": 12773,
+    "bus": 171,
+    "truck": 1154
+  },
+  "elapsed_seconds": 33.46235990524292
+}

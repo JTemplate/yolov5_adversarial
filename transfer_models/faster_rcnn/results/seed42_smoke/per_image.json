@@ -1,0 +1,92 @@
+[
+  {
+    "image": "0000001_02999_d_0000005.jpg",
+    "source_yolo_boxes": 9,
+    "clean_frcnn": 18,
+    "learned_frcnn": 16,
+    "random_frcnn": 20,
+    "learned_survived": 11,
+    "random_survived": 15
+  },
+  {
+    "image": "0000001_03499_d_0000006.jpg",
+    "source_yolo_boxes": 15,
+    "clean_frcnn": 14,
+    "learned_frcnn": 9,
+    "random_frcnn": 11,
+    "learned_survived": 6,
+    "random_survived": 7
+  },
+  {
+    "image": "0000001_03999_d_0000007.jpg",
+    "source_yolo_boxes": 3,
+    "clean_frcnn": 17,
+    "learned_frcnn": 17,
+    "random_frcnn": 17,
+    "learned_survived": 17,
+    "random_survived": 17
+  },
+  {
+    "image": "0000001_04527_d_0000008.jpg",
+    "source_yolo_boxes": 2,
+    "clean_frcnn": 15,
+    "learned_frcnn": 14,
+    "random_frcnn": 14,
+    "learned_survived": 14,
+    "random_survived": 14
+  },
+  {
+    "image": "0000001_05249_d_0000009.jpg",
+    "source_yolo_boxes": 36,
+    "clean_frcnn": 41,
+    "learned_frcnn": 23,
+    "random_frcnn": 38,
+    "learned_survived": 17,
+    "random_survived": 30
+  },
+  {
+    "image": "0000001_05499_d_0000010.jpg",
+    "source_yolo_boxes": 75,
+    "clean_frcnn": 51,
+    "learned_frcnn": 25,
+    "random_frcnn": 40,
+    "learned_survived": 14,
+    "random_survived": 28
+  },
+  {
+    "image": "0000001_05999_d_0000011.jpg",
+    "source_yolo_boxes": 37,
+    "clean_frcnn": 33,
+    "learned_frcnn": 21,
+    "random_frcnn": 34,
+    "learned_survived": 11,
+    "random_survived": 20
+  },
+  {
+    "image": "0000001_07999_d_0000012.jpg",
+    "source_yolo_boxes": 7,
+    "clean_frcnn": 5,
+    "learned_frcnn": 2,
+    "random_frcnn": 2,
+    "learned_survived": 2,
+    "random_survived": 2
+  },
+  {
+    "image": "0000001_08414_d_0000013.jpg",
+    "source_yolo_boxes": 17,
+    "clean_frcnn": 19,
+    "learned_frcnn": 10,
+    "random_frcnn": 18,
+    "learned_survived": 9,
+    "random_survived": 12
+  },
+  {
+    "image": "0000021_00000_d_0000001.jpg",
+    "source_yolo_boxes": 0,
+    "clean_frcnn": 0,
+    "learned_frcnn": 0,
+    "random_frcnn": 0,
+    "learned_survived": 0,
+    "random_survived": 0
+  }
+]
