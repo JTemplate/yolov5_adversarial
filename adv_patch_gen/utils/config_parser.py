@@ -8,7 +8,7 @@ from easydict import EasyDict as edict
 
 def load_config_object(cfg_path: str) -> edict:
     """Loads a config json and returns a edict object."""
-    with open(cfg_path, "r", encoding="utf-8") as json_file:
+    with open(cfg_path, encoding="utf-8") as json_file:
         cfg_dict = json.load(json_file)
 
     return edict(cfg_dict)
