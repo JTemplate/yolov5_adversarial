@@ -17,9 +17,8 @@ EPOCH_DEPRECATION_WARNING = (
 
 
 class GradualWarmupScheduler(_LRScheduler):
-    """
-    Sets the learning rate of parameter group to gradually increase for num_epochs from start_lr to the original lr set
-    for the optimizer.
+    """Sets the learning rate of parameter group to gradually increase for num_epochs from start_lr to the original lr
+    set for the optimizer.
 
     Args:
         optimizer (Optimizer): Wrapped optimizer.
@@ -28,7 +27,7 @@ class GradualWarmupScheduler(_LRScheduler):
         warmup_epochs (int): num of epochs during which the lr is increased. Default: 5.
         after_scheduler (Scheduler): scheduler to use after gradual warmup of lr is done. Default: None.
         last_epoch (int): The index of last epoch. Default: -1.
-            verbose (bool): If ``True``, prints a message to stdout for each update. Default: ``False``.
+        verbose (bool): If ``True``, prints a message to stdout for each update. Default: ``False``.
     """
 
     def __init__(self, optimizer, eps_lr=0.000001, warmup_epochs=5, after_scheduler=None, last_epoch=-1, verbose=False):
@@ -45,7 +44,7 @@ class GradualWarmupScheduler(_LRScheduler):
         self.after_scheduler.get_last_lr = get_last_lr
 
         self.finished = False  # set to True when warmup done
-        super(GradualWarmupScheduler, self).__init__(optimizer, last_epoch, verbose)
+        super().__init__(optimizer, last_epoch, verbose)
 
     def get_lr(self):
         if self.last_epoch > self.warmup_epochs:
@@ -95,4 +94,4 @@ class GradualWarmupScheduler(_LRScheduler):
                 self.after_scheduler.step(epoch=epoch - self.warmup_epochs)
             self._last_lr = self.after_scheduler.get_last_lr()
         else:
-            return super(GradualWarmupScheduler, self).step()
+            return super().step()

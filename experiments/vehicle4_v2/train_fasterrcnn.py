@@ -23,16 +23,13 @@ from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights, faster
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import functional as TF
 
-
 CLASS_NAMES = ["car", "van", "truck", "bus"]
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-root", type=Path, default=Path("data/visdrone_vehicle4_v2"))
-    parser.add_argument(
-        "--output-dir", type=Path, default=Path("runs/vehicle4_v2/detectors/fasterrcnn_seed0")
-    )
+    parser.add_argument("--output-dir", type=Path, default=Path("runs/vehicle4_v2/detectors/fasterrcnn_seed0"))
     parser.add_argument("--device", default="cuda:2")
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch-size", type=int, default=2)
@@ -121,8 +118,7 @@ class Vehicle4Dataset(Dataset):
                 boxes_tensor[:, 2] = 640.0 - old_x1
 
         area = (
-            (boxes_tensor[:, 2] - boxes_tensor[:, 0])
-            * (boxes_tensor[:, 3] - boxes_tensor[:, 1])
+            (boxes_tensor[:, 2] - boxes_tensor[:, 0]) * (boxes_tensor[:, 3] - boxes_tensor[:, 1])
             if len(boxes_tensor)
             else torch.zeros(0, dtype=torch.float32)
         )
@@ -195,9 +191,7 @@ def coco_metrics(model, loader, device: torch.device) -> dict[str, float]:
     coco_gt.dataset = {
         "images": images_json,
         "annotations": annotations_json,
-        "categories": [
-            {"id": index + 1, "name": name} for index, name in enumerate(CLASS_NAMES)
-        ],
+        "categories": [{"id": index + 1, "name": name} for index, name in enumerate(CLASS_NAMES)],
     }
     with contextlib.redirect_stdout(io.StringIO()):
         coco_gt.createIndex()
@@ -231,17 +225,15 @@ def main() -> int:
     config_path = args.output_dir / "config.json"
     if not config_path.exists():
         config_path.write_text(
-            json.dumps({key: str(value) if isinstance(value, Path) else value for key, value in vars(args).items()}, indent=2)
+            json.dumps(
+                {key: str(value) if isinstance(value, Path) else value for key, value in vars(args).items()}, indent=2
+            )
             + "\n",
             encoding="utf-8",
         )
 
-    train_dataset = Vehicle4Dataset(
-        args.dataset_root, "train", training=True, max_images=args.max_train_images
-    )
-    val_dataset = Vehicle4Dataset(
-        args.dataset_root, "internal_val", training=False, max_images=args.max_val_images
-    )
+    train_dataset = Vehicle4Dataset(args.dataset_root, "train", training=True, max_images=args.max_train_images)
+    val_dataset = Vehicle4Dataset(args.dataset_root, "internal_val", training=False, max_images=args.max_val_images)
     generator = torch.Generator().manual_seed(args.seed)
     train_loader = DataLoader(
         train_dataset,
@@ -295,8 +287,7 @@ def main() -> int:
         for images, targets in train_loader:
             images = [image.to(device, non_blocking=True) for image in images]
             targets = [
-                {key: value.to(device, non_blocking=True) for key, value in target.items()}
-                for target in targets
+                {key: value.to(device, non_blocking=True) for key, value in target.items()} for target in targets
             ]
             optimizer.zero_grad(set_to_none=True)
             with torch.cuda.amp.autocast(enabled=device.type == "cuda"):

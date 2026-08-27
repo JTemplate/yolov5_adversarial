@@ -2,9 +2,9 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -43,34 +43,25 @@ def main():
         summary_file = root / exp / "summary.json"
 
         if not summary_file.exists():
-            print(
-                f"WARNING: summary.json not found: "
-                f"{summary_file}"
-            )
+            print(f"WARNING: summary.json not found: {summary_file}")
             continue
 
-        with open(summary_file, "r") as f:
+        with open(summary_file) as f:
             data = json.load(f)
 
         rows.append(
             {
                 "experiment": exp,
                 "images": data["images"],
-                "clean_references":
-                    data["clean_reference_detections"],
-                "random_asr":
-                    data["random_asr"],
-                "transfer_asr":
-                    data["learned_transfer_asr"],
-                "transfer_gain":
-                    data["transfer_gain"],
+                "clean_references": data["clean_reference_detections"],
+                "random_asr": data["random_asr"],
+                "transfer_asr": data["learned_transfer_asr"],
+                "transfer_gain": data["transfer_gain"],
             }
         )
 
     if not rows:
-        raise RuntimeError(
-            "No valid transfer experiments found."
-        )
+        raise RuntimeError("No valid transfer experiments found.")
 
     df = pd.DataFrame(rows)
 
@@ -117,23 +108,11 @@ def main():
     print("Mean ± Std")
     print("-" * 40)
 
-    print(
-        f"Random ASR   : "
-        f"{random.mean():.2f} ± "
-        f"{random.std(ddof=1):.2f}%"
-    )
+    print(f"Random ASR   : {random.mean():.2f} ± {random.std(ddof=1):.2f}%")
 
-    print(
-        f"Transfer ASR : "
-        f"{transfer.mean():.2f} ± "
-        f"{transfer.std(ddof=1):.2f}%"
-    )
+    print(f"Transfer ASR : {transfer.mean():.2f} ± {transfer.std(ddof=1):.2f}%")
 
-    print(
-        f"Transfer Gain: "
-        f"{gain.mean():.2f} ± "
-        f"{gain.std(ddof=1):.2f} pp"
-    )
+    print(f"Transfer Gain: {gain.mean():.2f} ± {gain.std(ddof=1):.2f} pp")
 
     # -----------------------------------------------------
     # ASR comparison
@@ -160,9 +139,7 @@ def main():
     )
 
     ax.set_ylabel("ASR (%)")
-    ax.set_title(
-        "YOLOv5 → Faster R-CNN Zero-shot Transfer"
-    )
+    ax.set_title("YOLOv5 → Faster R-CNN Zero-shot Transfer")
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
@@ -189,13 +166,9 @@ def main():
         gain,
     )
 
-    ax.set_ylabel(
-        "Transfer Gain (percentage points)"
-    )
+    ax.set_ylabel("Transfer Gain (percentage points)")
 
-    ax.set_title(
-        "Adversarial Patch Gain over Random Patch"
-    )
+    ax.set_title("Adversarial Patch Gain over Random Patch")
 
     fig.tight_layout()
 
