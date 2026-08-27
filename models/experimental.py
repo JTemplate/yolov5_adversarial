@@ -5,9 +5,9 @@ import math
 
 import numpy as np
 import torch
-import torch.nn as nn
-from ultralytics.utils.patches import torch_load
+from torch import nn
 
+from ultralytics.utils.patches import torch_load
 from utils.downloads import attempt_download
 
 
@@ -87,8 +87,7 @@ class Ensemble(nn.ModuleList):
 
 
 def attempt_load(weights, device=None, inplace=True, fuse=True):
-    """
-    Loads and fuses an ensemble or single YOLOv5 model from weights, handling device placement and model adjustments.
+    """Loads and fuses an ensemble or single YOLOv5 model from weights, handling device placement and model adjustments.
 
     Example inputs: weights=[a,b,c] or a single model weights=[a] or weights=a.
     """
@@ -114,7 +113,7 @@ def attempt_load(weights, device=None, inplace=True, fuse=True):
             m.inplace = inplace
             if t is Detect and not isinstance(m.anchor_grid, list):
                 delattr(m, "anchor_grid")
-                setattr(m, "anchor_grid", [torch.zeros(1)] * m.nl)
+                m.anchor_grid = [torch.zeros(1)] * m.nl
         elif t is nn.Upsample and not hasattr(m, "recompute_scale_factor"):
             m.recompute_scale_factor = None  # torch 1.11.0 compatibility
 
