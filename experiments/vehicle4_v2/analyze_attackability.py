@@ -119,28 +119,27 @@ def make_records(model, evaluation_root, confidence, iou_threshold):
             category = CLASS_NAMES.get(int(reference["category_id"]), str(reference["category_id"]))
             size = size_bucket(area)
             indexes[(image_id, object_index)] = len(records)
-            records.append({
-                "model": model,
-                "image_id": image_id,
-                "clean_prediction_index": object_index,
-                "class": category,
-                "size": size,
-                "bbox_area": area_bucket(area),
-                "bbox_area_px2": area,
-                "bbox_area_fraction": area / (640.0 * 640.0),
-                "clean_confidence": float(reference["score"]),
-                "clean_confidence_bucket": confidence_bucket(float(reference["score"])),
-                "image_density": len(references),
-                "image_density_bucket": density_bucket(len(references)),
-                "class_size": f"{category}|{size}",
-                "condition_pairs": 0,
-                "learned_attacked_count": 0,
-                "random_attacked_count": 0,
-            })
-    learned_conditions = [
-        item for item in summary["conditions"].values()
-        if item["condition"].get("kind") == "learned"
-    ]
+            records.append(
+                {
+                    "model": model,
+                    "image_id": image_id,
+                    "clean_prediction_index": object_index,
+                    "class": category,
+                    "size": size,
+                    "bbox_area": area_bucket(area),
+                    "bbox_area_px2": area,
+                    "bbox_area_fraction": area / (640.0 * 640.0),
+                    "clean_confidence": float(reference["score"]),
+                    "clean_confidence_bucket": confidence_bucket(float(reference["score"])),
+                    "image_density": len(references),
+                    "image_density_bucket": density_bucket(len(references)),
+                    "class_size": f"{category}|{size}",
+                    "condition_pairs": 0,
+                    "learned_attacked_count": 0,
+                    "random_attacked_count": 0,
+                }
+            )
+    learned_conditions = [item for item in summary["conditions"].values() if item["condition"].get("kind") == "learned"]
     if len(learned_conditions) != 15:
         raise ValueError(f"Expected 15 learned conditions for {model}, found {len(learned_conditions)}")
     for learned_result in learned_conditions:
@@ -187,20 +186,22 @@ def summarize(records, dimension):
         random_count = sum(item["random_attacked_count"] for item in items)
         learned_asr = learned_count / trials
         random_asr = random_count / trials
-        rows.append({
-            "model": items[0]["model"],
-            "dimension": dimension,
-            "dimension_definition": DIMENSIONS[dimension],
-            "bucket": bucket,
-            "unique_clean_objects": len(items),
-            "condition_pairs": items[0]["condition_pairs"],
-            "reference_trials": trials,
-            "learned_attacked_trials": learned_count,
-            "random_attacked_trials": random_count,
-            "learned_asr": learned_asr,
-            "random_asr": random_asr,
-            "learned_minus_random_asr_gain": learned_asr - random_asr,
-        })
+        rows.append(
+            {
+                "model": items[0]["model"],
+                "dimension": dimension,
+                "dimension_definition": DIMENSIONS[dimension],
+                "bucket": bucket,
+                "unique_clean_objects": len(items),
+                "condition_pairs": items[0]["condition_pairs"],
+                "reference_trials": trials,
+                "learned_attacked_trials": learned_count,
+                "random_attacked_trials": random_count,
+                "learned_asr": learned_asr,
+                "random_asr": random_asr,
+                "learned_minus_random_asr_gain": learned_asr - random_asr,
+            }
+        )
     return rows
 
 
@@ -222,11 +223,25 @@ def main():
         for dimension in DIMENSIONS:
             all_buckets.extend(summarize(records, dimension))
     object_fields = [
-        "model", "image_id", "clean_prediction_index", "class", "size", "bbox_area",
-        "bbox_area_px2", "bbox_area_fraction", "clean_confidence", "clean_confidence_bucket",
-        "image_density", "image_density_bucket", "class_size", "condition_pairs",
-        "learned_attacked_count", "random_attacked_count", "learned_asr",
-        "random_asr", "paired_asr_gain",
+        "model",
+        "image_id",
+        "clean_prediction_index",
+        "class",
+        "size",
+        "bbox_area",
+        "bbox_area_px2",
+        "bbox_area_fraction",
+        "clean_confidence",
+        "clean_confidence_bucket",
+        "image_density",
+        "image_density_bucket",
+        "class_size",
+        "condition_pairs",
+        "learned_attacked_count",
+        "random_attacked_count",
+        "learned_asr",
+        "random_asr",
+        "paired_asr_gain",
     ]
     write_csv(args.output_root / "object_attackability.csv", all_records, object_fields)
     write_csv(args.output_root / "bucket_attackability.csv", all_buckets)
@@ -239,9 +254,22 @@ def main():
         "condition_pairs_per_model": 15,
         "dimensions": DIMENSIONS,
         "size_buckets": {"small": "area < 32^2 px2", "medium": "32^2 <= area < 96^2 px2", "large": "area >= 96^2 px2"},
-        "bbox_area_buckets": ["<100 px2", "100–<250 px2", "250–<500 px2", "500–<1,000 px2", "1,000–<2,500 px2", ">=2,500 px2"],
+        "bbox_area_buckets": [
+            "<100 px2",
+            "100–<250 px2",
+            "250–<500 px2",
+            "500–<1,000 px2",
+            "1,000–<2,500 px2",
+            ">=2,500 px2",
+        ],
         "confidence_buckets": ["0.40–<0.50", "0.50–<0.60", "0.60–<0.70", "0.70–<0.80", "0.80–<0.90", ">=0.90"],
-        "density_buckets": ["1–10 detections/image", "11–20 detections/image", "21–30 detections/image", "31–40 detections/image", ">40 detections/image"],
+        "density_buckets": [
+            "1–10 detections/image",
+            "11–20 detections/image",
+            "21–30 detections/image",
+            "31–40 detections/image",
+            ">40 detections/image",
+        ],
         "reference_unit": "detector clean prediction, not ground-truth object; this matches the formal ASR protocol",
         "learned_asr": "learned attacked trials / clean reference trials",
         "random_asr": "random attacked trials / clean reference trials",

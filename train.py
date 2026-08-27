@@ -33,8 +33,8 @@ except ImportError:
 import numpy as np
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 import yaml
+from torch import nn
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
@@ -44,11 +44,10 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from ultralytics.utils.patches import torch_load
-
 import val as validate  # for end-of-epoch mAP
 from models.experimental import attempt_load
 from models.yolo import Model
+from ultralytics.utils.patches import torch_load
 from utils.autoanchor import check_anchors
 from utils.autobatch import check_train_batch_size
 from utils.callbacks import Callbacks
@@ -103,8 +102,7 @@ GIT_INFO = check_git_info()
 
 
 def train(hyp, opt, device, callbacks):
-    """
-    Train a YOLOv5 model on a custom dataset using specified hyperparameters, options, and device, managing datasets,
+    """Train a YOLOv5 model on a custom dataset using specified hyperparameters, options, and device, managing datasets,
     model architecture, loss computation, and optimizer steps.
 
     Args:
@@ -116,9 +114,9 @@ def train(hyp, opt, device, callbacks):
     Returns:
         None
 
-    Models and datasets download automatically from the latest YOLOv5 release.
+            Models and datasets download automatically from the latest YOLOv5 release.
 
-    Example:
+    Examples:
         Single-GPU training:
         ```bash
         $ python train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (recommended)
@@ -474,8 +472,7 @@ def train(hyp, opt, device, callbacks):
             # Update best mAP
             fi = fitness(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
             stop = stopper(epoch=epoch, fitness=fi)  # early stop check
-            if fi > best_fitness:
-                best_fitness = fi
+            best_fitness = max(best_fitness, fi)
             log_vals = list(mloss) + list(results) + lr
             callbacks.run("on_fit_epoch_end", log_vals, epoch, best_fitness, fi)
 
@@ -545,8 +542,7 @@ def train(hyp, opt, device, callbacks):
 
 
 def parse_opt(known=False):
-    """
-    Parse command-line arguments for YOLOv5 training, validation, and testing.
+    """Parse command-line arguments for YOLOv5 training, validation, and testing.
 
     Args:
         known (bool, optional): If True, parses known arguments, ignoring the unknown. Defaults to False.
@@ -554,7 +550,7 @@ def parse_opt(known=False):
     Returns:
         (argparse.Namespace): Parsed command-line arguments containing options for YOLOv5 execution.
 
-    Example:
+    Examples:
         ```python
         from ultralytics.yolo import parse_opt
         opt = parse_opt()
@@ -623,8 +619,7 @@ def parse_opt(known=False):
 
 
 def main(opt, callbacks=Callbacks()):
-    """
-    Runs the main entry point for training or hyperparameter evolution with specified options and optional callbacks.
+    """Runs the main entry point for training or hyperparameter evolution with specified options and optional callbacks.
 
     Args:
         opt (argparse.Namespace): The command-line arguments parsed for YOLOv5 training and evolution.
@@ -634,7 +629,7 @@ def main(opt, callbacks=Callbacks()):
     Returns:
         None
 
-    Note:
+    Notes:
         For detailed usage, refer to:
         https://github.com/ultralytics/yolov5/tree/master/models
     """
@@ -767,8 +762,8 @@ def main(opt, callbacks=Callbacks()):
             del hyp_GA[item]  # Remove the item from hyp_GA dictionary
 
         # Set lower_limit and upper_limit arrays to hold the search space boundaries
-        lower_limit = np.array([meta[k][1] for k in hyp_GA.keys()])
-        upper_limit = np.array([meta[k][2] for k in hyp_GA.keys()])
+        lower_limit = np.array([meta[k][1] for k in hyp_GA])
+        upper_limit = np.array([meta[k][2] for k in hyp_GA])
 
         # Create gene_ranges list to hold the range of values for each gene in the population
         gene_ranges = [(lower_limit[i], upper_limit[i]) for i in range(len(upper_limit))]
@@ -782,7 +777,7 @@ def main(opt, callbacks=Callbacks()):
             with open(ROOT / opt.resume_evolve, errors="ignore") as f:
                 evolve_population = yaml.safe_load(f)
                 for value in evolve_population.values():
-                    value = np.array([value[k] for k in hyp_GA.keys()])
+                    value = np.array([value[k] for k in hyp_GA])
                     initial_values.append(list(value))
 
         # If not resuming from a previous checkpoint, generate initial values from .yaml files in opt.evolve_population
@@ -791,7 +786,7 @@ def main(opt, callbacks=Callbacks()):
             for file_name in yaml_files:
                 with open(os.path.join(opt.evolve_population, file_name)) as yaml_file:
                     value = yaml.safe_load(yaml_file)
-                    value = np.array([value[k] for k in hyp_GA.keys()])
+                    value = np.array([value[k] for k in hyp_GA])
                     initial_values.append(list(value))
 
         # Generate random values within the search space for the rest of the population
@@ -893,8 +888,7 @@ def main(opt, callbacks=Callbacks()):
 
 
 def generate_individual(input_ranges, individual_length):
-    """
-    Generate an individual with random hyperparameters within specified ranges.
+    """Generate an individual with random hyperparameters within specified ranges.
 
     Args:
         input_ranges (list[tuple[float, float]]): List of tuples where each tuple contains the lower and upper bounds
@@ -904,7 +898,7 @@ def generate_individual(input_ranges, individual_length):
     Returns:
         list[float]: A list representing a generated individual with random gene values within the specified ranges.
 
-    Example:
+    Examples:
         ```python
         input_ranges = [(0.01, 0.1), (0.1, 1.0), (0.9, 2.0)]
         individual_length = 3
@@ -912,7 +906,7 @@ def generate_individual(input_ranges, individual_length):
         print(individual)  # Output: [0.035, 0.678, 1.456] (example output)
         ```
 
-    Note:
+    Notes:
         The individual returned will have a length equal to `individual_length`, with each gene value being a floating-point
         number within its specified range in `input_ranges`.
     """
@@ -924,16 +918,17 @@ def generate_individual(input_ranges, individual_length):
 
 
 def run(**kwargs):
-    """
-    Execute YOLOv5 training with specified options, allowing optional overrides through keyword arguments.
+    """Execute YOLOv5 training with specified options, allowing optional overrides through keyword arguments.
 
     Args:
         weights (str, optional): Path to initial weights. Defaults to ROOT / 'yolov5s.pt'.
         cfg (str, optional): Path to model YAML configuration. Defaults to an empty string.
         data (str, optional): Path to dataset YAML configuration. Defaults to ROOT / 'data/coco128.yaml'.
-        hyp (str, optional): Path to hyperparameters YAML configuration. Defaults to ROOT / 'data/hyps/hyp.scratch-low.yaml'.
+        hyp (str, optional): Path to hyperparameters YAML configuration. Defaults to ROOT /
+            'data/hyps/hyp.scratch-low.yaml'.
         epochs (int, optional): Total number of training epochs. Defaults to 100.
-        batch_size (int, optional): Total batch size for all GPUs. Use -1 for automatic batch size determination. Defaults to 16.
+        batch_size (int, optional): Total batch size for all GPUs. Use -1 for automatic batch size determination.
+            Defaults to 16.
         imgsz (int, optional): Image size (pixels) for training and validation. Defaults to 640.
         rect (bool, optional): Use rectangular training. Defaults to False.
         resume (bool | str, optional): Resume most recent training with an optional path. Defaults to False.
@@ -941,9 +936,10 @@ def run(**kwargs):
         noval (bool, optional): Only validate at the final epoch. Defaults to False.
         noautoanchor (bool, optional): Disable AutoAnchor. Defaults to False.
         noplots (bool, optional): Do not save plot files. Defaults to False.
-        evolve (int, optional): Evolve hyperparameters for a specified number of generations. Use 300 if provided without a
-            value.
-        evolve_population (str, optional): Directory for loading population during evolution. Defaults to ROOT / 'data/ hyps'.
+        evolve (int, optional): Evolve hyperparameters for a specified number of generations. Use 300 if provided
+            without a value.
+        evolve_population (str, optional): Directory for loading population during evolution. Defaults to ROOT / 'data/
+            hyps'.
         resume_evolve (str, optional): Resume hyperparameter evolution from the last generation. Defaults to None.
         bucket (str, optional): gsutil bucket for saving checkpoints. Defaults to an empty string.
         cache (str, optional): Cache image data in 'ram' or 'disk'. Defaults to None.

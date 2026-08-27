@@ -69,10 +69,7 @@ class BboxPatcher:
         m_gau_std=(0.1, 0.1),
         patch_apply_prob=0.5,
     ):
-        """
-        patch_dir: dir with patches
-        rotation_range: rotation range in degrees
-        scale_range: scale range in float
+        """patch_dir: dir with patches rotation_range: rotation range in degrees scale_range: scale range in float.
         """
         self.patches = []
         for patch_path in glob.glob(os.path.join(patch_dir, "*")):
@@ -90,9 +87,9 @@ class BboxPatcher:
 
     def __call__(self, image: np.ndarray, bbox_coords: np.ndarray):
         """
-        Arguments:
+        Args:
             image: np.ndarray, image of shape H,W,C
-            bbox_coords: np.ndarray, [[cls,x1,y1,x2,y2], ...]
+            bbox_coords: np.ndarray, [[cls,x1,y1,x2,y2], ...].
         """
         img_h, img_w = image.shape[:2]
         image = TF.to_tensor(image)
@@ -158,8 +155,7 @@ class BboxPatcher:
 
 
 def normalize(x, mean=IMAGENET_MEAN, std=IMAGENET_STD, inplace=False):
-    """
-    Applies ImageNet normalization to RGB images in BCHW format, modifying them in-place if specified.
+    """Applies ImageNet normalization to RGB images in BCHW format, modifying them in-place if specified.
 
     Example: y = (x - mean) / std
     """
@@ -201,8 +197,7 @@ def hist_equalize(im, clahe=True, bgr=False):
 
 
 def replicate(im, labels):
-    """
-    Replicates half of the smallest object labels in an image for data augmentation.
+    """Replicates half of the smallest object labels in an image for data augmentation.
 
     Returns augmented image and labels.
     """
@@ -337,8 +332,7 @@ def random_perspective(
 
 
 def copy_paste(im, labels, segments, p=0.5):
-    """
-    Applies Copy-Paste augmentation by flipping and merging segments and labels on an image.
+    """Applies Copy-Paste augmentation by flipping and merging segments and labels on an image.
 
     Details at https://arxiv.org/abs/2012.07177.
     """
@@ -363,8 +357,7 @@ def copy_paste(im, labels, segments, p=0.5):
 
 
 def cutout(im, labels, p=0.5):
-    """
-    Applies cutout augmentation to an image with optional label adjustment, using random masks of varying sizes.
+    """Applies cutout augmentation to an image with optional label adjustment, using random masks of varying sizes.
 
     Details at https://arxiv.org/abs/1708.04552.
     """
@@ -394,8 +387,7 @@ def cutout(im, labels, p=0.5):
 
 
 def mixup(im, labels, im2, labels2):
-    """
-    Applies MixUp augmentation by blending images and labels.
+    """Applies MixUp augmentation by blending images and labels.
 
     See https://arxiv.org/pdf/1710.09412.pdf for details.
     """
@@ -406,8 +398,7 @@ def mixup(im, labels, im2, labels2):
 
 
 def box_candidates(box1, box2, wh_thr=2, ar_thr=100, area_thr=0.1, eps=1e-16):
-    """
-    Filters bounding box candidates by minimum width-height threshold `wh_thr` (pixels), aspect ratio threshold
+    """Filters bounding box candidates by minimum width-height threshold `wh_thr` (pixels), aspect ratio threshold
     `ar_thr`, and area ratio threshold `area_thr`.
 
     box1(4,n) is before augmentation, box2(4,n) is after augmentation.
@@ -431,8 +422,7 @@ def classify_albumentations(
     auto_aug=False,
 ):
     # YOLOv5 classification Albumentations (optional, only used if package is installed)
-    """Sets up and returns Albumentations transforms for YOLOv5 classification tasks depending on augmentation
-    settings.
+    """Sets up and returns Albumentations transforms for YOLOv5 classification tasks depending on augmentation settings.
     """
     prefix = colorstr("albumentations: ")
     try:
@@ -485,8 +475,7 @@ class LetterBox:
         self.stride = stride  # used with auto
 
     def __call__(self, im):
-        """
-        Resizes and pads input image `im` (HWC format) to specified dimensions, maintaining aspect ratio.
+        """Resizes and pads input image `im` (HWC format) to specified dimensions, maintaining aspect ratio.
 
         im = np.array HWC
         """
@@ -509,8 +498,7 @@ class CenterCrop:
         self.h, self.w = (size, size) if isinstance(size, int) else size
 
     def __call__(self, im):
-        """
-        Applies center crop to the input image and resizes it to a specified size, maintaining aspect ratio.
+        """Applies center crop to the input image and resizes it to a specified size, maintaining aspect ratio.
 
         im = np.array HWC
         """
@@ -529,8 +517,7 @@ class ToTensor:
         self.half = half
 
     def __call__(self, im):
-        """
-        Converts BGR np.array image from HWC to RGB CHW format, and normalizes to [0, 1], with support for FP16 if
+        """Converts BGR np.array image from HWC to RGB CHW format, and normalizes to [0, 1], with support for FP16 if
         `half=True`.
 
         im = np.array HWC in BGR order

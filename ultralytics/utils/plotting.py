@@ -25,8 +25,8 @@ class Annotator:
 def save_one_box(xyxy, im, file=Path("im.jpg"), *args, save=True, **kwargs):
     if save:
         try:
-            from PIL import Image
             import numpy as np
+            from PIL import Image
 
             array = np.asarray(im)
             x1, y1, x2, y2 = [int(float(v)) for v in xyxy]
