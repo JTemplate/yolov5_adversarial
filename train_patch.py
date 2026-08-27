@@ -4,6 +4,8 @@ Training code for Adversarial patch training.
 python train_patch.py --cfg config_json_file
 """
 
+from __future__ import annotations
+
 import glob
 import json
 import os
@@ -75,7 +77,7 @@ class PatchTrainer:
             param.requires_grad = False
 
         # set log dir
-        cfg.log_dir = osp.join(cfg.log_dir, f'{time.strftime("%Y%m%d-%H%M%S")}_{cfg.patch_name}')
+        cfg.log_dir = osp.join(cfg.log_dir, f"{time.strftime('%Y%m%d-%H%M%S')}_{cfg.patch_name}")
         self.writer = self.init_tensorboard(cfg.log_dir, cfg.tensorboard_port)
         # save config parameters to tensorboard logs
         for cfg_key, cfg_val in cfg.items():
@@ -108,11 +110,11 @@ class PatchTrainer:
             batch_size=cfg.batch_size,
             shuffle=True,
             num_workers=4,
-            pin_memory=True if self.dev.type == "cuda" else False,
+            pin_memory=self.dev.type == "cuda",
         )
         self.epoch_length = len(self.train_loader)
 
-    def init_tensorboard(self, log_dir: str = None, port: int = 6006, run_tb=True):
+    def init_tensorboard(self, log_dir: str | None = None, port: int = 6006, run_tb=True):
         """Initialize tensorboard with optional name."""
         if run_tb:
             while is_port_in_use(port) and port < 65535:
@@ -129,12 +131,12 @@ class PatchTrainer:
         return SummaryWriter()
 
     def generate_patch(self, patch_type: str, pil_img_mode: str = "RGB") -> torch.Tensor:
-        """
-        Generate a random patch as a starting point for optimization.
+        """Generate a random patch as a starting point for optimization.
 
-        Arguments:
+        Args:
             patch_type: Can be 'gray' or 'random'. Whether or not generate a gray or a random patch.
-            pil_img_mode: Pillow image modes i.e. RGB, L https://pillow.readthedocs.io/en/latest/handbook/concepts.html#modes
+            pil_img_mode: Pillow image modes i.e. RGB, L
+                https://pillow.readthedocs.io/en/latest/handbook/concepts.html#modes
         """
         p_c = 1 if pil_img_mode in {"L"} else 3
         p_w, p_h = self.cfg.patch_size
@@ -145,10 +147,9 @@ class PatchTrainer:
         return adv_patch_cpu
 
     def read_image(self, path, pil_img_mode: str = "RGB") -> torch.Tensor:
-        """
-        Read an input image to be used as a patch.
+        """Read an input image to be used as a patch.
 
-        Arguments:
+        Args:
             path: Path to the image to be read.
         """
         patch_img = Image.open(path).convert(pil_img_mode)
@@ -205,7 +206,7 @@ class PatchTrainer:
             for i_batch, (img_batch, lab_batch) in tqdm(
                 enumerate(self.train_loader), desc=f"Running train epoch {epoch}", total=self.epoch_length
             ):
-                with autograd.set_detect_anomaly(mode=True if self.cfg.debug_mode else False):
+                with autograd.set_detect_anomaly(mode=bool(self.cfg.debug_mode)):
                     img_batch = img_batch.to(self.dev, non_blocking=True)
                     lab_batch = lab_batch.to(self.dev, non_blocking=True)
                     adv_patch = adv_patch_cpu.to(self.dev, non_blocking=True)

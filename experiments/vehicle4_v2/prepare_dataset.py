@@ -20,7 +20,6 @@ from pathlib import Path
 
 from PIL import Image
 
-
 CLASS_MAP = {4: 0, 5: 1, 6: 2, 9: 3}
 CLASS_NAMES = ["car", "van", "truck", "bus"]
 SPLIT_SEED = 20260825
@@ -131,9 +130,7 @@ def count_score(
     return 2.0 * image_error + class_error / len(CLASS_NAMES)
 
 
-def choose_validation_groups(
-    records: dict[str, dict[str, object]], fraction: float, seed: int
-) -> set[str]:
+def choose_validation_groups(records: dict[str, dict[str, object]], fraction: float, seed: int) -> set[str]:
     grouped: dict[str, list[dict[str, object]]] = defaultdict(list)
     for record in records.values():
         grouped[str(record["group"])].append(record)
@@ -162,9 +159,7 @@ def choose_validation_groups(
         candidate_classes = Counter()
         for group in order:
             group_images, group_classes = group_vectors[group]
-            current_score = count_score(
-                candidate_images, candidate_classes, target_images, target_classes
-            )
+            current_score = count_score(candidate_images, candidate_classes, target_images, target_classes)
             proposed_classes = candidate_classes + group_classes
             proposed_score = count_score(
                 candidate_images + group_images,
@@ -198,10 +193,7 @@ def write_yolo_label(path: Path, record: dict[str, object]) -> Counter:
     for category, x, y, box_width, box_height in record["boxes"]:
         x_center = (x + box_width / 2.0) / width
         y_center = (y + box_height / 2.0) / height
-        rows.append(
-            f"{category} {x_center:.8f} {y_center:.8f} "
-            f"{box_width / width:.8f} {box_height / height:.8f}\n"
-        )
+        rows.append(f"{category} {x_center:.8f} {y_center:.8f} {box_width / width:.8f} {box_height / height:.8f}\n")
         counts[category] += 1
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(rows), encoding="utf-8")
@@ -229,8 +221,7 @@ def main() -> int:
     output_root = args.output_root
     if output_root.exists():
         print(
-            f"Refusing to overwrite existing dataset: {output_root}. "
-            "Move it aside explicitly before rebuilding.",
+            f"Refusing to overwrite existing dataset: {output_root}. Move it aside explicitly before rebuilding.",
             file=sys.stderr,
         )
         return 2
@@ -239,9 +230,7 @@ def main() -> int:
 
     train_records = inventory(args.source_root / "VisDrone2019-DET-train")
     official_records = inventory(args.source_root / "VisDrone2019-DET-val")
-    validation_groups = choose_validation_groups(
-        train_records, args.internal_val_fraction, args.split_seed
-    )
+    validation_groups = choose_validation_groups(train_records, args.internal_val_fraction, args.split_seed)
 
     split_records = {"train": {}, "internal_val": {}, "official_val": official_records}
     for stem, record in train_records.items():
@@ -274,9 +263,7 @@ def main() -> int:
             {
                 "split": split,
                 "images": len(records),
-                "duplicates_removed": sum(
-                    int(record["duplicates_removed"]) for record in records.values()
-                ),
+                "duplicates_removed": sum(int(record["duplicates_removed"]) for record in records.values()),
                 **{CLASS_NAMES[index]: split_counts[index] for index in range(len(CLASS_NAMES))},
                 "total_objects": sum(split_counts.values()),
             }

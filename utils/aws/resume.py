@@ -9,6 +9,7 @@ from pathlib import Path
 
 import torch
 import yaml
+
 from ultralytics.utils.patches import torch_load
 
 FILE = Path(__file__).resolve()
@@ -17,7 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 
 port = 0  # --master_port
-path = Path("").resolve()
+path = Path.cwd()
 for last in path.rglob("*/**/last.pt"):
     ckpt = torch_load(last)
     if ckpt["optimizer"] is None:
