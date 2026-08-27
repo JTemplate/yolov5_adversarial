@@ -24,10 +24,10 @@ from pathlib import Path
 
 import torch
 import torch.distributed as dist
-import torch.hub as hub
-import torch.optim.lr_scheduler as lr_scheduler
 import torchvision
+from torch import hub
 from torch.cuda import amp
+from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 FILE = Path(__file__).resolve()
@@ -253,8 +253,7 @@ def train(opt, device):
         # Log metrics
         if RANK in {-1, 0}:
             # Best fitness
-            if fitness > best_fitness:
-                best_fitness = fitness
+            best_fitness = max(best_fitness, fitness)
 
             # Log
             metrics = {
@@ -365,8 +364,7 @@ def main(opt):
 
 
 def run(**kwargs):
-    """
-    Executes YOLOv5 model training or inference with specified parameters, returning updated options.
+    """Executes YOLOv5 model training or inference with specified parameters, returning updated options.
 
     Example: from yolov5 import classify; classify.train.run(data=mnist, imgsz=320, model='yolov5m')
     """
