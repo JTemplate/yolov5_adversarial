@@ -1,5 +1,7 @@
 """Testing code for evaluating Adversarial patches against object detection."""
 
+from __future__ import annotations
+
 import glob
 import io
 import json
@@ -9,7 +11,6 @@ import random
 import time
 from contextlib import redirect_stdout
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -82,18 +83,18 @@ class PatchTester:
     def calc_asr(
         boxes,
         boxes_pred,
-        class_list: List[str],
+        class_list: list[str],
         lo_area: float = 20**2,
         hi_area: float = 67**2,
-        cls_id: Optional[int] = None,
+        cls_id: int | None = None,
         class_agnostic: bool = False,
         recompute_asr_all: bool = False,
-    ) -> Tuple[float, float, float, float]:
-        """
-        Calculate attack success rate (How many bounding boxes were hidden from the detector) for all predictions and
+    ) -> tuple[float, float, float, float]:
+        """Calculate attack success rate (How many bounding boxes were hidden from the detector) for all predictions and
         for different bbox areas.
 
         Note cls_id is None, misclassifications are ignored and only missing detections are considered attack success.
+
         Args:
             boxes: torch.Tensor, first pass boxes (gt unpatched boxes) [class, x1, y1, x2, y2]
             boxes_pred: torch.Tensor, second pass boxes (patched boxes) [x1, y1, x2, y2, conf, class]
@@ -103,7 +104,8 @@ class PatchTester:
             cls_id: filter for a particular class
             class_agnostic: All classes are considered the same
             recompute_asr_all: Recomputer ASR for all boxes aggregated together slower but more acc. asr
-        Return:
+
+        Returns:
             attack success rates bbox area tuple: small, medium, large, all
                 float, float, float, float
         """
@@ -166,7 +168,7 @@ class PatchTester:
         return max(asr_small, 0.0), max(asr_medium, 0.0), max(asr_large, 0.0), max(asr_all, 0.0)
 
     @staticmethod
-    def draw_bbox_on_pil_image(bbox: np.ndarray, padded_img_pil: Image, class_list: List[str]) -> Image:
+    def draw_bbox_on_pil_image(bbox: np.ndarray, padded_img_pil: Image, class_list: list[str]) -> Image:
         """Draw bounding box on a PIL image and return said image after drawing."""
         padded_img_np = np.ascontiguousarray(padded_img_pil)
         label_2_class = dict(enumerate(class_list))
@@ -197,14 +199,14 @@ class PatchTester:
         save_orig_padded_image: bool = True,
         draw_bbox_on_image: bool = True,
         class_agnostic: bool = False,
-        cls_id: Optional[int] = None,
-        min_pixel_area: Optional[int] = None,
+        cls_id: int | None = None,
+        min_pixel_area: int | None = None,
         save_plots: bool = False,
         save_video: bool = False,
         max_images: int = 100000,
     ) -> dict:
-        """
-        Initiate test for properly, randomly and no-patched images
+        """Initiate test for properly, randomly and no-patched images.
+
         Args:
             conf_thresh: confidence thres for successful detection/positives
             nms_thresh: nms thres
@@ -214,11 +216,13 @@ class PatchTester:
             draw_bbox_on_image: Draw bboxes on the original images and the random noise & properly patched images
             class_agnostic: all classes are treated the same. Use when only evaluating for obj det & not classification
             cls_id: filtering for a specific class for evaluation only
-            min_pixel_area: all bounding boxes having area less than this are filtered out during testing. if None, use all boxes
+            min_pixel_area: all bounding boxes having area less than this are filtered out during testing. if None, use
+                all boxes
             save_video: if set to true, eval videos are saved in directory videos
             max_images: max number of images to evaluate from inside imgdir
+
         Returns:
-            dict of patch and noise coco_map and asr results
+            dict of patch and noise coco_map and asr results.
         """
         t_0 = time.time()
 
@@ -335,7 +339,7 @@ class PatchTester:
                 x_center, y_center, width, height = x_center.item(), y_center.item(), width.item(), height.item()
                 labels.append([cls_id_box, x_center / m_w, y_center / m_h, width / m_w, height / m_h])
                 if save_txt:
-                    textfile.write(f"{cls_id_box} {x_center/m_w} {y_center/m_h} {width/m_w} {height/m_h}\n")
+                    textfile.write(f"{cls_id_box} {x_center / m_w} {y_center / m_h} {width / m_w} {height / m_h}\n")
                 clean_results.append(
                     {
                         "image_id": image_id,
@@ -421,7 +425,7 @@ class PatchTester:
                 x_center, y_center, width, height = box[:4]
                 x_center, y_center, width, height = x_center.item(), y_center.item(), width.item(), height.item()
                 if save_txt:
-                    textfile.write(f"{cls_id_box} {x_center/m_w} {y_center/m_h} {width/m_w} {height/m_h}\n")
+                    textfile.write(f"{cls_id_box} {x_center / m_w} {y_center / m_h} {width / m_w} {height / m_h}\n")
                 patch_results.append(
                     {
                         "image_id": image_id,
@@ -488,7 +492,7 @@ class PatchTester:
                 x_center, y_center, width, height = box[:4]
                 x_center, y_center, width, height = x_center.item(), y_center.item(), width.item(), height.item()
                 if save_txt:
-                    textfile.write(f"{cls_id_box} {x_center/m_w} {y_center/m_h} {width/m_w} {height/m_h}\n")
+                    textfile.write(f"{cls_id_box} {x_center / m_w} {y_center / m_h} {width / m_w} {height / m_h}\n")
                 noise_results.append(
                     {
                         "image_id": image_id,
@@ -737,7 +741,7 @@ def main():
         raise ValueError("target_size_frac can only have one or two values")
     if args.savevideo and not args.saveimg:
         raise ValueError("To save videos, images must also be saved pass both --save-img & --save-vid flags")
-    savename = f'{time.strftime("%Y%m%d-%H%M%S")}_' + cfg.patch_name
+    savename = f"{time.strftime('%Y%m%d-%H%M%S')}_" + cfg.patch_name
     if args.class_agnostic and args.target_class is not None:
         print(
             f"""{BColors.WARNING}WARNING:{BColors.ENDC} target_class and class_agnostic are both set.
