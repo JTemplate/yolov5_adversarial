@@ -6,6 +6,7 @@ the probability extractor before importing the trainer, which keeps all
 dataset, transforms, optimizer, regularizers, and checkpoint behavior identical
 to the validated baseline.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -20,7 +21,6 @@ import torch
 from torch import nn
 
 from adv_patch_gen.utils.confidence_hard_loss import ConfidenceAwareHardTargetLoss
-from adv_patch_gen.utils.loss import MaxProbExtractor as LegacyMaxProbExtractor
 
 
 class VariantMaxProbExtractor(nn.Module):
@@ -31,22 +31,28 @@ class VariantMaxProbExtractor(nn.Module):
         self.config = config
         if variant == "B1":
             self.pool = ConfidenceAwareHardTargetLoss(
-                threshold=0.80, temperature=0.05, gamma=2.0,
-                max_weight=1.0, topk=64, hard_mix=0.70,
+                threshold=0.80,
+                temperature=0.05,
+                gamma=2.0,
+                max_weight=1.0,
+                topk=64,
+                hard_mix=0.70,
             )
         elif variant == "B2":
             self.pool = ConfidenceAwareHardTargetLoss(
-                threshold=0.80, temperature=0.05, gamma=2.0,
-                max_weight=4.0, topk=64, hard_mix=0.70,
+                threshold=0.80,
+                temperature=0.05,
+                gamma=2.0,
+                max_weight=4.0,
+                topk=64,
+                hard_mix=0.70,
             )
         else:
             raise ValueError(f"Unsupported variant: {variant}")
 
     def candidate_scores(self, output: torch.Tensor) -> torch.Tensor:
         if output.size(-1) != 5 + self.config.n_classes:
-            raise ValueError(
-                f"unexpected YOLO output width {output.size(-1)}; expected {5 + self.config.n_classes}"
-            )
+            raise ValueError(f"unexpected YOLO output width {output.size(-1)}; expected {5 + self.config.n_classes}")
         class_confs = output[:, :, 5 : 5 + self.config.n_classes]
         objectness = output[:, :, 4]
         if self.config.objective_class_id is not None:

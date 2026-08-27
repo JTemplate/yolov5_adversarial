@@ -1,18 +1,19 @@
 """Modules for creating adversarial object patch."""
 
+from __future__ import annotations
+
 import math
-from typing import Tuple, Union
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from adv_patch_gen.utils.median_pool import MedianPool2d
 
 
 class PatchTransformer(nn.Module):
-    """PatchTransformer: transforms batch of patches
+    """PatchTransformer: transforms batch of patches.
 
     Module providing the functionality necessary to transform a batch of patches, randomly adjusting brightness and
     contrast, adding random amount of noise, and rotating randomly. Resizes patches according to as size based on the
@@ -21,21 +22,21 @@ class PatchTransformer(nn.Module):
 
     def __init__(
         self,
-        t_size_frac: Union[float, Tuple[float, float]] = 0.3,
-        mul_gau_mean: Union[float, Tuple[float, float]] = (0.5, 0.8),
-        mul_gau_std: Union[float, Tuple[float, float]] = 0.1,
-        x_off_loc: Tuple[float, float] = [-0.25, 0.25],
-        y_off_loc: Tuple[float, float] = [-0.25, 0.25],
+        t_size_frac: float | tuple[float, float] = 0.3,
+        mul_gau_mean: float | tuple[float, float] = (0.5, 0.8),
+        mul_gau_std: float | tuple[float, float] = 0.1,
+        x_off_loc: tuple[float, float] = [-0.25, 0.25],
+        y_off_loc: tuple[float, float] = [-0.25, 0.25],
         dev: torch.device = torch.device("cuda:0"),
     ):
-        super(PatchTransformer, self).__init__()
+        super().__init__()
         # convert to duplicated lists/tuples to unpack and send to np.random.uniform
         self.t_size_frac = [t_size_frac, t_size_frac] if isinstance(t_size_frac, float) else t_size_frac
         self.m_gau_mean = [mul_gau_mean, mul_gau_mean] if isinstance(mul_gau_mean, float) else mul_gau_mean
         self.m_gau_std = [mul_gau_std, mul_gau_std] if isinstance(mul_gau_std, float) else mul_gau_std
-        assert (
-            len(self.t_size_frac) == 2 and len(self.m_gau_mean) == 2 and len(self.m_gau_std) == 2
-        ), "Range must have 2 values"
+        assert len(self.t_size_frac) == 2 and len(self.m_gau_mean) == 2 and len(self.m_gau_std) == 2, (
+            "Range must have 2 values"
+        )
         self.x_off_loc = x_off_loc
         self.y_off_loc = y_off_loc
         self.dev = dev
@@ -65,7 +66,7 @@ class PatchTransformer(nn.Module):
             add_gau = torch.normal(0, 0.001, (p_c, p_h, p_w), device=self.dev)
             adv_patch = adv_patch * mul_gau + add_gau
         adv_patch = self.medianpooler(adv_patch.unsqueeze(0))
-        m_h, m_w = model_in_sz
+        _m_h, m_w = model_in_sz
         # Determine size of padding
         pad = (m_w - adv_patch.size(-1)) / 2
         # Make a batch of patches
@@ -173,12 +174,11 @@ class PatchTransformer(nn.Module):
 
 
 class PatchApplier(nn.Module):
-    """PatchApplier: applies adversarial patches to images.
+    r"""PatchApplier: applies adversarial patches to images.
 
-    Module providing the functionality necessary to apply a patch to all detections in all images in the batch.
-    The patch (adv_batch) has the same size as the image, just is zero everywhere there isn't a patch.
-    If patch_alpha == 1 (default), just overwrite the background image values with the patch values.
-    Else, blend the patch with the image
+    Module providing the functionality necessary to apply a patch to all detections in all images in the batch. The
+    patch (adv_batch) has the same size as the image, just is zero everywhere there isn't a patch. If patch_alpha == 1
+    (default), just overwrite the background image values with the patch values. Else, blend the patch with the image
     See: https://learnopencv.com/alpha-blending-using-opencv-cpp-python/
          https://stackoverflow.com/questions/49737541/merge-two-images-with-alpha-channel/49738078
         I = \alpha F + (1 - \alpha) B
@@ -187,7 +187,7 @@ class PatchApplier(nn.Module):
     """
 
     def __init__(self, patch_alpha: float = 1):
-        super(PatchApplier, self).__init__()
+        super().__init__()
         self.patch_alpha = patch_alpha
 
     def forward(self, img_batch, adv_batch):
