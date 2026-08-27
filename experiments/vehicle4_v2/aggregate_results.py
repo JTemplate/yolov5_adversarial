@@ -10,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 MODELS = ["yolov5s", "yolov5m", "fasterrcnn"]
 
 
@@ -63,9 +62,7 @@ def paired_asr_image_rows(learned: dict, random_result: dict) -> np.ndarray:
     return np.asarray(rows, dtype=np.int64)
 
 
-def hierarchical_asr_ci(
-    values: dict[int, dict[int, np.ndarray]], replicates: int, seed: int
-) -> list[float]:
+def hierarchical_asr_ci(values: dict[int, dict[int, np.ndarray]], replicates: int, seed: int) -> list[float]:
     """Bootstrap paired ASR gain over patch, transform, then image levels."""
     rng = np.random.default_rng(seed)
     patch_seeds = np.asarray(sorted(values), dtype=np.int64)
@@ -86,9 +83,7 @@ def hierarchical_asr_ci(
                 learned_attacked_total += int(totals[1])
                 random_attacked_total += int(totals[2])
         samples[replicate_index] = (
-            (learned_attacked_total - random_attacked_total) / clean_total
-            if clean_total
-            else np.nan
+            (learned_attacked_total - random_attacked_total) / clean_total if clean_total else np.nan
         )
     if np.isnan(samples).any():
         raise ValueError("An image-level ASR bootstrap replicate had no clean detections")
@@ -134,9 +129,7 @@ def main() -> int:
             random_drop = float(random_result["relative_map_drop"])
             gain = learned_drop - random_drop
             paired_gains.setdefault(patch_seed, {})[transform_index] = gain
-            paired_asr_rows.setdefault(patch_seed, {})[transform_index] = paired_asr_image_rows(
-                learned, random_result
-            )
+            paired_asr_rows.setdefault(patch_seed, {})[transform_index] = paired_asr_image_rows(learned, random_result)
             learned_drops.append(learned_drop)
             random_drops.append(random_drop)
             learned_asrs.append(float(learned["asr"]["asr"]))
@@ -157,9 +150,7 @@ def main() -> int:
                     "random_asr": random_result["asr"]["asr"],
                 }
             )
-        ci = hierarchical_ci(
-            paired_gains, args.bootstrap_replicates, args.bootstrap_seed + model_index
-        )
+        ci = hierarchical_ci(paired_gains, args.bootstrap_replicates, args.bootstrap_seed + model_index)
         asr_ci = hierarchical_asr_ci(
             paired_asr_rows,
             args.bootstrap_replicates,
