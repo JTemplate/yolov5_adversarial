@@ -28,7 +28,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 AP_RE = re.compile(
     r"Average Precision\s+\(AP\).*?"
     r"IoU=0\.50:0\.95.*?"
@@ -85,9 +84,7 @@ def newest_patch_stats_by_experiment(root: Path):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Summarize and compare adversarial patch evaluation results."
-    )
+    parser = argparse.ArgumentParser(description="Summarize and compare adversarial patch evaluation results.")
     parser.add_argument(
         "--root",
         default="runs/test_adversarial",
@@ -103,10 +100,7 @@ def main():
     filters.add_argument(
         "--prefix",
         default=None,
-        help=(
-            "Only compare experiments whose top-level directory name "
-            "starts with this prefix, e.g. ablation_"
-        ),
+        help=("Only compare experiments whose top-level directory name starts with this prefix, e.g. ablation_"),
     )
     filters.add_argument(
         "--include",
@@ -146,11 +140,7 @@ def main():
         return
 
     if args.prefix:
-        grouped = {
-            name: grouped_all[name]
-            for name in sorted(grouped_all)
-            if name.startswith(args.prefix)
-        }
+        grouped = {name: grouped_all[name] for name in sorted(grouped_all) if name.startswith(args.prefix)}
     elif args.include:
         grouped = {}
         missing = []
@@ -166,10 +156,7 @@ def main():
                 print(f"  - {name}")
             print()
     else:
-        grouped = {
-            name: grouped_all[name]
-            for name in sorted(grouped_all)
-        }
+        grouped = {name: grouped_all[name] for name in sorted(grouped_all)}
 
     if not grouped:
         print("No experiments matched your selection.")
@@ -192,7 +179,7 @@ def main():
         epoch = int(epoch_match.group(1)) if epoch_match else None
 
         if epoch_match:
-            group_name = experiment[:epoch_match.start()].rstrip("_")
+            group_name = experiment[: epoch_match.start()].rstrip("_")
         else:
             group_name = experiment
 
@@ -244,14 +231,8 @@ def main():
     x = np.arange(len(rows))
     width = 0.36
 
-    adv_asr = [
-        np.nan if r["adversarial_asr"] is None else r["adversarial_asr"]
-        for r in rows
-    ]
-    random_asr = [
-        np.nan if r["random_asr"] is None else r["random_asr"]
-        for r in rows
-    ]
+    adv_asr = [np.nan if r["adversarial_asr"] is None else r["adversarial_asr"] for r in rows]
+    random_asr = [np.nan if r["random_asr"] is None else r["random_asr"] for r in rows]
 
     fig, ax = plt.subplots(figsize=(max(10, len(rows) * 1.35), 6))
     ax.bar(x - width / 2, random_asr, width, label="Random patch ASR")
@@ -267,18 +248,9 @@ def main():
     fig.savefig(out / "asr_comparison.png", dpi=180)
     plt.close(fig)
 
-    clean_ap = [
-        np.nan if r["clean_ap50_95"] is None else r["clean_ap50_95"]
-        for r in rows
-    ]
-    random_ap = [
-        np.nan if r["random_ap50_95"] is None else r["random_ap50_95"]
-        for r in rows
-    ]
-    adv_ap = [
-        np.nan if r["adversarial_ap50_95"] is None else r["adversarial_ap50_95"]
-        for r in rows
-    ]
+    clean_ap = [np.nan if r["clean_ap50_95"] is None else r["clean_ap50_95"] for r in rows]
+    random_ap = [np.nan if r["random_ap50_95"] is None else r["random_ap50_95"] for r in rows]
+    adv_ap = [np.nan if r["adversarial_ap50_95"] is None else r["adversarial_ap50_95"] for r in rows]
 
     width = 0.26
     fig, ax = plt.subplots(figsize=(max(10, len(rows) * 1.35), 6))
@@ -302,21 +274,13 @@ def main():
     for row in epoch_rows:
         groups.setdefault(row["group"], []).append(row)
 
-    usable_groups = {
-        name: sorted(items, key=lambda r: r["epoch"])
-        for name, items in groups.items()
-        if len(items) >= 2
-    }
+    usable_groups = {name: sorted(items, key=lambda r: r["epoch"]) for name, items in groups.items() if len(items) >= 2}
 
     if usable_groups:
         fig, ax = plt.subplots(figsize=(9, 6))
 
         for group_name, items in usable_groups.items():
-            valid = [
-                (r["epoch"], r["adversarial_asr"])
-                for r in items
-                if r["adversarial_asr"] is not None
-            ]
+            valid = [(r["epoch"], r["adversarial_asr"]) for r in items if r["adversarial_asr"] is not None]
 
             if len(valid) >= 2:
                 e_vals = [v[0] for v in valid]
