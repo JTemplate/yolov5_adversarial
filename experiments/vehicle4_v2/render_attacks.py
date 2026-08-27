@@ -22,7 +22,6 @@ from torchvision.transforms import functional as TF
 
 from adv_patch_gen.utils.patch import PatchApplier, PatchTransformer
 
-
 EVALUATION_TRANSFORM_SEEDS = [7101, 7102, 7103, 7104, 7105]
 
 
@@ -172,9 +171,7 @@ def main() -> int:
                 )
             for image_index, (image_path, image_tensor, labels) in enumerate(padded_cache):
                 per_image_seed = evaluation_seed * 100000 + image_index
-                learned = apply_patch_chunked(
-                    image_tensor, learned_patch, labels, transformer, applier, per_image_seed
-                )
+                learned = apply_patch_chunked(image_tensor, learned_patch, labels, transformer, applier, per_image_seed)
                 random_image = apply_patch_chunked(
                     image_tensor, random_patch, labels, transformer, applier, per_image_seed
                 )
@@ -193,9 +190,7 @@ def main() -> int:
         "transform_seeds": EVALUATION_TRANSFORM_SEEDS,
         "conditions": conditions,
     }
-    args.output_root.joinpath("conditions.json").write_text(
-        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-    )
+    args.output_root.joinpath("conditions.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(args.output_root / "conditions.json")
     return 0
 

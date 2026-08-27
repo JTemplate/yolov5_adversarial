@@ -6,6 +6,7 @@ must receive the physical device in its config as well as in
 CUDA_VISIBLE_DEVICES. This wrapper patches config generation at runtime while
 leaving the experiment orchestrator itself unchanged.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,8 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
 
-from experiments.vehicle4_v2 import run_hard_target_methods as pipeline  # noqa: E402
-
+from experiments.vehicle4_v2 import run_hard_target_methods as pipeline
 
 _original_make_config = pipeline.make_config
 
