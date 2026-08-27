@@ -21,15 +21,13 @@ class ConfidenceAwareHardTargetLoss(nn.Module):
     Args:
         threshold: Confidence at which hard-target weighting turns on.
         temperature: Width of the sigmoid transition around ``threshold``.
-        gamma: Focusing exponent; larger values concentrate on the hardest
-            candidates.
+        gamma: Focusing exponent; larger values concentrate on the hardest candidates.
         max_weight: Upper bound on the detached candidate weight.
         topk: Number of candidates in the hard pool. ``None`` uses all.
         hard_mix: Fraction of the weighted pool mixed with the original max.
 
-    Inputs are scores in ``[0, 1]`` with shape ``[batch, candidates]``.  The
-    optional reference tensor has the same shape and is detached internally.
-    The returned tensor is one scalar per batch item.
+            Inputs are scores in ``[0, 1]`` with shape ``[batch, candidates]``. The optional reference tensor has the
+            same shape and is detached internally. The returned tensor is one scalar per batch item.
     """
 
     def __init__(
@@ -78,4 +76,3 @@ class ConfidenceAwareHardTargetLoss(nn.Module):
         weighted_pool = (weights * selected_scores).sum(dim=1) / weights.sum(dim=1).clamp_min(1e-6)
         original_max = scores.max(dim=1).values
         return (1.0 - self.hard_mix) * original_max + self.hard_mix * weighted_pool
-
