@@ -23,10 +23,9 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torchvision.transforms import functional as TF
 
+from experiments.vehicle4_v2.train_fasterrcnn import CLASS_NAMES, build_model
 from models.common import DetectMultiBackend
 from utils.general import non_max_suppression
-
-from experiments.vehicle4_v2.train_fasterrcnn import CLASS_NAMES, build_model
 
 
 def parse_args() -> argparse.Namespace:
@@ -84,9 +83,7 @@ def build_ground_truth(render_root: Path) -> tuple[Path, list[Path]]:
     # All three detector evaluators start concurrently. Publish the shared
     # ground-truth file atomically so another evaluator can never observe a
     # partially written JSON document.
-    temporary_path = ground_truth_path.with_name(
-        f".{ground_truth_path.name}.{os.getpid()}.tmp"
-    )
+    temporary_path = ground_truth_path.with_name(f".{ground_truth_path.name}.{os.getpid()}.tmp")
     temporary_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     os.replace(temporary_path, ground_truth_path)
     return ground_truth_path, image_paths
@@ -109,9 +106,7 @@ def infer_yolo(model, image_paths, device, batch_size, conf_threshold, nms_iou):
         batch = torch.stack(tensors).to(device)
         with torch.no_grad():
             raw = model(batch)[0]
-            outputs = non_max_suppression(
-                raw, conf_thres=conf_threshold, iou_thres=nms_iou, max_det=300
-            )
+            outputs = non_max_suppression(raw, conf_thres=conf_threshold, iou_thres=nms_iou, max_det=300)
         for offset, output in enumerate(outputs):
             image_id = start + offset
             for x1, y1, x2, y2, score, category in output.detach().cpu().tolist():
@@ -131,8 +126,7 @@ def infer_fasterrcnn(model, image_paths, device, batch_size):
     for start in range(0, len(image_paths), batch_size):
         batch_paths = image_paths[start : start + batch_size]
         tensors = [
-            TF.pil_to_tensor(Image.open(path).convert("RGB")).float().div(255.0).to(device)
-            for path in batch_paths
+            TF.pil_to_tensor(Image.open(path).convert("RGB")).float().div(255.0).to(device) for path in batch_paths
         ]
         with torch.no_grad():
             outputs = model(tensors)
@@ -254,8 +248,7 @@ def main() -> int:
             predictions = json.loads(predictions_path.read_text(encoding="utf-8"))
         else:
             image_paths = [
-                args.render_root / "conditions" / name / "images" / clean_path.name
-                for clean_path in clean_image_paths
+                args.render_root / "conditions" / name / "images" / clean_path.name for clean_path in clean_image_paths
             ]
             started = time.time()
             if args.model.startswith("yolov5"):
@@ -276,23 +269,31 @@ def main() -> int:
         if clean_predictions is None:
             raise RuntimeError("Clean condition must be evaluated first")
         metrics = score_coco(coco_gt, predictions)
-        asr = None if name == "clean" else calculate_asr(
-            clean_predictions,
-            predictions,
-            args.asr_confidence_threshold,
-            args.asr_iou,
+        asr = (
+            None
+            if name == "clean"
+            else calculate_asr(
+                clean_predictions,
+                predictions,
+                args.asr_confidence_threshold,
+                args.asr_iou,
+            )
         )
         payload = {"model": args.model, "condition": condition, "metrics": metrics, "asr": asr}
         metrics_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         condition_results[name] = payload
-        print(json.dumps({"condition": name, "map50_95": metrics["map50_95"], "asr": asr["asr"] if asr else None}), flush=True)
+        print(
+            json.dumps({"condition": name, "map50_95": metrics["map50_95"], "asr": asr["asr"] if asr else None}),
+            flush=True,
+        )
 
     clean_map = condition_results["clean"]["metrics"]["map50_95"]
     for name, result in condition_results.items():
         attack_map = result["metrics"]["map50_95"]
         result["relative_map_drop"] = (clean_map - attack_map) / clean_map if clean_map > 0 else None
     output_dir.joinpath("summary.json").write_text(
-        json.dumps({"model": args.model, "weights": str(args.weights), "conditions": condition_results}, indent=2) + "\n",
+        json.dumps({"model": args.model, "weights": str(args.weights), "conditions": condition_results}, indent=2)
+        + "\n",
         encoding="utf-8",
     )
     return 0
