@@ -2,21 +2,17 @@ from pathlib import Path
 
 import torch
 from PIL import Image
-
 from torchvision.models.detection import (
-    fasterrcnn_resnet50_fpn,
     FasterRCNN_ResNet50_FPN_Weights,
+    fasterrcnn_resnet50_fpn,
 )
 from torchvision.transforms.functional import pil_to_tensor
-
 
 # --------------------------------------------------
 # Device
 # --------------------------------------------------
 
-device = torch.device(
-    "cuda:0" if torch.cuda.is_available() else "cpu"
-)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 print("Device:", device)
 
@@ -27,9 +23,7 @@ print("Device:", device)
 
 weights = FasterRCNN_ResNet50_FPN_Weights.DEFAULT
 
-model = fasterrcnn_resnet50_fpn(
-    weights=weights
-)
+model = fasterrcnn_resnet50_fpn(weights=weights)
 
 model.to(device)
 model.eval()
@@ -39,16 +33,12 @@ model.eval()
 # Find one VisDrone validation image
 # --------------------------------------------------
 
-image_dir = Path(
-    "data/visdrone_data/VisDrone2019-DET-val/images"
-)
+image_dir = Path("data/visdrone_data/VisDrone2019-DET-val/images")
 
 images = sorted(image_dir.glob("*.jpg"))
 
 if not images:
-    raise RuntimeError(
-        f"No JPG images found in {image_dir}"
-    )
+    raise RuntimeError(f"No JPG images found in {image_dir}")
 
 image_path = images[0]
 
@@ -61,9 +51,7 @@ print("Image:", image_path)
 
 image = Image.open(image_path).convert("RGB")
 
-image_tensor = (
-    pil_to_tensor(image).float() / 255.0
-)
+image_tensor = pil_to_tensor(image).float() / 255.0
 
 image_tensor = image_tensor.to(device)
 
@@ -110,15 +98,10 @@ for box, label, score in zip(
     labels,
     scores,
 ):
-
     label_id = int(label)
     score_value = float(score)
 
-    if (
-        label_id in vehicle_classes
-        and score_value >= conf_thresh
-    ):
-
+    if label_id in vehicle_classes and score_value >= conf_thresh:
         count += 1
 
         x1, y1, x2, y2 = box.tolist()
