@@ -10,7 +10,6 @@ import sys
 import time
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 RUN_ROOT = ROOT / "runs/vehicle4_v2"
 STATE_DIR = RUN_ROOT / "pipeline"
@@ -50,16 +49,11 @@ def wait_for_detectors() -> None:
         yolo_results_ok = {}
         for name in ["yolov5s", "yolov5m"]:
             results_path = RUN_ROOT / f"detectors/{name}_seed0/results.csv"
-            line_count = (
-                len(results_path.read_text(encoding="utf-8").splitlines())
-                if results_path.exists()
-                else 0
-            )
+            line_count = len(results_path.read_text(encoding="utf-8").splitlines()) if results_path.exists() else 0
             yolo_results_ok[name] = line_count >= 101
             status[name]["results_rows"] = max(line_count - 1, 0)
-        complete = (
-            all(item["artifact"] and not item["process_running"] for item in status.values())
-            and all(yolo_results_ok.values())
+        complete = all(item["artifact"] and not item["process_running"] for item in status.values()) and all(
+            yolo_results_ok.values()
         )
         STATE_DIR.joinpath("heartbeat.json").write_text(
             json.dumps({"time": time.time(), "detectors": status}, indent=2) + "\n",
