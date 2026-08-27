@@ -15,7 +15,6 @@ import numpy
 import torch
 import torchvision
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -61,7 +60,9 @@ def main() -> int:
             "--query-gpu=index,name,uuid,memory.total,driver_version",
             "--format=csv,noheader",
         ).splitlines(),
-        "inputs": {str(path.relative_to(ROOT)): {"bytes": path.stat().st_size, "sha256": sha256(path)} for path in inputs},
+        "inputs": {
+            str(path.relative_to(ROOT)): {"bytes": path.stat().st_size, "sha256": sha256(path)} for path in inputs
+        },
         "pretrained_weight_provenance": {
             "repository": "Ultralytics/YOLOv5",
             "version": "v7-compatible COCO checkpoints",
