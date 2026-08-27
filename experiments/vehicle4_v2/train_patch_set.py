@@ -12,16 +12,13 @@ import sys
 import time
 from pathlib import Path
 
-
 SEEDS = [42, 123, 2026]
 DEFAULT_DEVICES = ["cuda:0", "cuda:1", "cuda:3"]
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--template", type=Path, default=Path("adv_patch_gen/configs/vehicle4_v2_full_10.json")
-    )
+    parser.add_argument("--template", type=Path, default=Path("adv_patch_gen/configs/vehicle4_v2_full_10.json"))
     parser.add_argument(
         "--weights",
         type=Path,
